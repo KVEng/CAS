@@ -21,11 +21,11 @@ func handleLogin(c *gin.Context) {
 	if username == "admin" && password == "password" {
 		session.Set("user", username)
 		session.Save()
-		redir := c.Query("redirect")
-		if redir != "" {
-			c.Redirect(http.StatusFound, redir)
-			return
-		}
+		// redir := c.Query("redirect")
+		// if redir != "" {
+		// 	c.Redirect(http.StatusFound, redir)
+		// 	return
+		// }
 	} else {
 		c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "Invalid credentials"})
 	}
