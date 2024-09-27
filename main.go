@@ -63,7 +63,7 @@ func main() {
 
 	engine.GET("/login", loginPage, proxy)
 	engine.POST("/login", handleLogin, proxy)
-	engine.Any("/proxy", mustLogin, proxy)
+	engine.NoRoute(mustLogin, proxy)
 
 	engine.Run("localhost:11392")
 }
