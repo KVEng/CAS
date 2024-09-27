@@ -24,12 +24,12 @@ func handleLogin(c *gin.Context) {
 		redir := c.Query("redirect")
 		if redir != "" {
 			c.Redirect(http.StatusFound, redir)
-			c.Abort()
 			return
 		}
 	} else {
 		c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "Invalid credentials"})
 	}
+	c.Abort()
 }
 
 func mustLogin(c *gin.Context) {
