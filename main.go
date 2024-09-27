@@ -60,7 +60,7 @@ func main() {
 		session.Save()
 	})
 
-	engine.Any("/*"+PROXY_PARAM, proxy)
+	engine.Any("/c/*"+PROXY_PARAM, proxy)
 
 	engine.Run("localhost:11392")
 }
