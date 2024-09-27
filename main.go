@@ -24,6 +24,7 @@ func handleLogin(c *gin.Context) {
 		redir := c.Query("redirect")
 		if redir != "" {
 			c.Redirect(http.StatusFound, redir)
+			c.Abort()
 			return
 		}
 	} else {
@@ -48,6 +49,7 @@ func loginPage(c *gin.Context) {
 		return
 	}
 	c.HTML(http.StatusOK, "login.html", gin.H{})
+	c.Abort()
 }
 
 func main() {
