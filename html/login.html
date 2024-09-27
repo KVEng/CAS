@@ -1,9 +1,25 @@
-<h1>KevinZonda CAS</h1>
-<form method="POST" action="/login"></form>
-    Username: <input type="text" name="username" placeholder="Username">
-    Password: <input type="password" name="password" placeholder="Password">
-    <button type="submit">Login</button>
-    {{if .error}}
-        <p>{{.error}}</p>
-    {{end}}
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>KevinZonda CAS Login</h2>
+    <form method="POST" action="/login">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div>
+            <input type="submit" value="Login">
+        </div>
+        {{if .error}}
+            <p style="color: red;">{{.error}}</p>
+        {{end}}
+    </form>
+</body>
+</html>
