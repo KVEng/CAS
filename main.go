@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const PROXY_PARAM = "/proxyPath"
+const PROXY_PARAM = "proxyPath"
 const PROXY_REQ_HEADER = "KevinZonda-CAS-Proxy"
 
 func proxy(c *gin.Context) {
