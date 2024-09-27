@@ -5,6 +5,8 @@ import (
 	"net/http/httputil"
 	"net/url"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +14,13 @@ const PROXY_PARAM = "proxyPath"
 const PROXY_REQ_HEADER = "KevinZonda-CAS-Proxy"
 
 func proxy(c *gin.Context) {
+	session := sessions.Default(c)
+
+	if session.Get("username") == nil {
+		c.String(http.StatusUnauthorized, "KevinZonda CAS Error: %s", "UNAUTHORIZED")
+		return
+	}
+
 	remoteUrl := c.GetHeader(PROXY_REQ_HEADER)
 	remote, err := url.Parse(remoteUrl)
 	if err != nil || remote.Scheme == "" || remote.Host == "" {
@@ -39,7 +48,17 @@ func proxy(c *gin.Context) {
 }
 
 func main() {
+	store, _ := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("CAS_SESSION"))
+
 	engine := gin.Default()
+
+	engine.Use(sessions.Sessions("KEVINZONDA_CAS_SESSION", store))
+
+	engine.GET("/login", func(c *gin.Context) {
+		session := sessions.Default(c)
+		session.Set("username", "KevinZonda")
+		session.Save()
+	})
 
 	engine.Any("/*"+PROXY_PARAM, proxy)
 
