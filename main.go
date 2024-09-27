@@ -27,7 +27,7 @@ func handleLogin(c *gin.Context) {
 		session.Save()
 		// c.Redirect(http.StatusFound, "/dashboard")
 	} else {
-		c.HTML(http.StatusBadRequest, "./html/login.html", gin.H{"error": "Invalid credentials"})
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "Invalid credentials"})
 	}
 }
 
@@ -41,13 +41,15 @@ func mustLogin(c *gin.Context) {
 }
 
 func loginPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "./html/login.html", gin.H{})
+	c.HTML(http.StatusOK, "login.html", gin.H{})
 }
 
 func main() {
 	store, _ := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("CAS_SESSION"))
 
 	engine := gin.Default()
+
+	engine.LoadHTMLGlob("html/*")
 
 	engine.Use(sessions.Sessions(COOKIE_NAME, store))
 
