@@ -48,7 +48,9 @@ func loginPage(c *gin.Context) {
 	if isLogin(c) {
 		return
 	}
-	c.HTML(http.StatusOK, "login.html", gin.H{})
+	c.HTML(http.StatusOK, "login.html", gin.H{
+		"redirect": c.Query("redirect"),
+	})
 	c.Abort()
 }
 
