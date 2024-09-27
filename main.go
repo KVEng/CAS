@@ -8,17 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const PROXY_PARAM = "proxyPath"
 const PROXY_REQ_HEADER = "KevinZonda-CAS-Proxy"
 const COOKIE_NAME = "KEVINZONDA_CAS_SESSION"
 
-func login(c *gin.Context) {
-	session := sessions.Default(c)
-	session.Set("username", "KevinZonda")
-	session.Save()
-}
-
 func handleLogin(c *gin.Context) {
+	if isLogin(c) {
+		return
+	}
 	session := sessions.Default(c)
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -36,15 +32,21 @@ func handleLogin(c *gin.Context) {
 }
 
 func mustLogin(c *gin.Context) {
-	session := sessions.Default(c)
-
-	if session.Get("username") == nil {
-		c.String(http.StatusUnauthorized, "KevinZonda CAS Error: %s", "UNAUTHORIZED")
+	if !isLogin(c) {
+		c.Redirect(http.StatusFound, "/login?redirect="+c.Request.URL.String())
 		c.Abort()
 	}
 }
 
+func isLogin(c *gin.Context) bool {
+	session := sessions.Default(c)
+	return session.Get("username") != nil
+}
+
 func loginPage(c *gin.Context) {
+	if isLogin(c) {
+		return
+	}
 	c.HTML(http.StatusOK, "login.html", gin.H{})
 }
 
@@ -57,10 +59,11 @@ func main() {
 
 	engine.Use(sessions.Sessions(COOKIE_NAME, store))
 
-	engine.GET("/login", loginPage)
-	engine.POST("/login", handleLogin)
+	engine.NoRoute(mustLogin)
 
-	engine.Any("/px/*"+PROXY_PARAM, mustLogin, proxy)
+	engine.GET("/login", loginPage, proxy)
+	engine.POST("/login", handleLogin, proxy)
+	engine.Any("/proxy", mustLogin, proxy)
 
 	engine.Run("localhost:11392")
 }
