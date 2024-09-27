@@ -1,0 +1,9 @@
+<h1>KevinZonda CAS</h1>
+<form method="POST" action="/login"></form>
+    Username: <input type="text" name="username" placeholder="Username">
+    Password: <input type="password" name="password" placeholder="Password">
+    <button type="submit">Login</button>
+    {{if .error}}
+        <p>{{.error}}</p>
+    {{end}}
+</form>
