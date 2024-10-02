@@ -11,7 +11,7 @@ import (
 
 func proxy(c *gin.Context) {
 	if !verifyGroupByToken(c) {
-		c.String(http.StatusForbidden, "Forbidden")
+		c.HTML(http.StatusForbidden, "error.html", gin.H{"error": "Forbidden"})
 		c.Abort()
 		return
 	}
