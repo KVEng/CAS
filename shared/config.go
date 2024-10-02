@@ -36,7 +36,7 @@ func ModifyUserDb(f func(db map[string]model.User)) error {
 	db := copyDb()
 	f(db)
 	var users []model.User
-	for _, v := range UserDb {
+	for _, v := range db {
 		users = append(users, v)
 	}
 	cfg := Config
