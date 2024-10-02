@@ -1,1 +1,1 @@
-go build -o out/cas .
+go build -v -o out/cas .
