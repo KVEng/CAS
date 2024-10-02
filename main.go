@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/KVEng/CAS/auth"
+	"github.com/KVEng/CAS/model"
 	"github.com/KVEng/CAS/shared"
 	"github.com/KVEng/CAS/token"
 	"net/http"
@@ -115,6 +116,50 @@ func logout(c *gin.Context) {
 
 }
 
+func changePasswordPage(c *gin.Context) {
+	if c.Query("KEVINZONDA_CAS_IGNORE") == "true" {
+		return
+	}
+	c.HTML(http.StatusOK, "change-password.html", gin.H{})
+}
+
+func handleChangePassword(c *gin.Context) {
+	if c.Query("KEVINZONDA_CAS_IGNORE") == "true" {
+		return
+	}
+	username := c.PostForm("username")
+	oldPassword := c.PostForm("old_password")
+	newPassword := c.PostForm("new_password")
+	confirmNewPassword := c.PostForm("confirm_new_password")
+
+	if newPassword != confirmNewPassword {
+		c.HTML(http.StatusBadRequest, "change-password.html", gin.H{"error": "Password not match"})
+		c.Abort()
+		return
+	}
+
+	if !auth.Verify(username, oldPassword, "") {
+		c.HTML(http.StatusBadRequest, "change-password.html", gin.H{"error": "Invalid credentials"})
+		c.Abort()
+		return
+	}
+
+	err := shared.ModifyUserDb(func(db map[string]model.User) {
+		u, ok := db[username]
+		if ok {
+			u.Password = newPassword
+			db[username] = u
+		}
+	})
+
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "change-password.html", gin.H{"error": "Storage unit failure"})
+		c.Abort()
+		return
+	}
+	c.HTML(http.StatusOK, "change-password.html", gin.H{"error": "Password changed successfully"})
+}
+
 func main() {
 	shared.InitGlobalCfg()
 	shared.InitGlobalRdb()
@@ -134,6 +179,10 @@ func main() {
 	engine.GET("/cas/logout", logout, proxy)
 	engine.GET("/cas/login", loginPage, proxy)
 	engine.POST("/cas/login", handleLogin, proxy)
+
+	engine.GET("/cas/change-password", changePasswordPage, proxy)
+	engine.POST("/cas/change-password", handleChangePassword, proxy)
+
 	engine.NoRoute(mustLogin, proxy)
 
 	engine.Run(shared.Config.ListenAddr)
