@@ -14,6 +14,7 @@ const PROXY_REQ_HEADER = "KevinZonda-CAS-Proxy"
 const COOKIE_NAME = "KEVINZONDA_CAS_SESSION"
 const REDIS_KEY = "CAS_SESSION"
 const REDIS_ADDR = "localhost:6379"
+const REDIRECT_FLAG = "redirect"
 
 func handleLogin(c *gin.Context) {
 	if isLogin(c) {
@@ -22,18 +23,23 @@ func handleLogin(c *gin.Context) {
 	session := sessions.Default(c)
 	username := c.PostForm("username")
 	password := c.PostForm("password")
-	if auth.Verify(username, password, "admin") {
-		session.Set("username", username)
-		session.Save()
-	} else {
+	if !auth.Verify(username, password, "admin") {
 		c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "Invalid credentials"})
+		c.Abort()
 	}
-	c.Abort()
+
+	session.Set("username", username)
+	session.Save()
+
+	if c.Query(REDIRECT_FLAG) != "" {
+		c.Redirect(http.StatusFound, c.Query(REDIRECT_FLAG))
+		c.Abort()
+	}
 }
 
 func mustLogin(c *gin.Context) {
 	if !isLogin(c) {
-		c.Redirect(http.StatusFound, "/login?redirect="+c.Request.URL.String())
+		c.Redirect(http.StatusFound, "/login?"+REDIRECT_FLAG+"="+c.Request.URL.String())
 		c.Abort()
 	}
 }
@@ -46,10 +52,17 @@ func isLogin(c *gin.Context) bool {
 }
 
 func loginPage(c *gin.Context) {
-	if !isLogin(c) {
-		c.HTML(http.StatusOK, "login.html", gin.H{})
-		c.Abort()
+	if isLogin(c) {
+		return
 	}
+	redir := c.Query(REDIRECT_FLAG)
+	if redir != "" {
+		redir = "?" + REDIRECT_FLAG + "=" + redir
+	}
+	c.HTML(http.StatusOK, "login.html", gin.H{
+		"action": "/login" + redir,
+	})
+	c.Abort()
 }
 
 func main() {
@@ -67,6 +80,7 @@ func main() {
 		if isLogin(c) {
 			session := sessions.Default(c)
 			session.Clear()
+			session.Save()
 			c.String(http.StatusOK, "CAS Logged out")
 			c.Abort()
 			return
@@ -74,20 +88,6 @@ func main() {
 	}, proxy)
 	engine.GET("/login", loginPage, proxy)
 	engine.POST("/login", handleLogin, proxy)
-	engine.GET("/incr", func(c *gin.Context) {
-		session := sessions.Default(c)
-		var count int
-		v := session.Get("count")
-		if v == nil {
-			count = 0
-		} else {
-			count = v.(int)
-			count++
-		}
-		session.Set("count", count)
-		session.Save()
-		c.JSON(200, gin.H{"count": count})
-	})
 	engine.NoRoute(mustLogin, proxy)
 
 	engine.Run("localhost:11392")
