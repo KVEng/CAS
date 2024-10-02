@@ -32,10 +32,13 @@ func handleLogin(c *gin.Context) {
 	session.Set("token", tk)
 	session.Save()
 
-	if c.Query(shared.REDIRECT_FLAG) != "" {
-		c.Redirect(http.StatusFound, c.Query(shared.REDIRECT_FLAG))
-		c.Abort()
+	redir := c.Query(shared.REDIRECT_FLAG)
+	if redir != "" {
+		redir = "/"
 	}
+
+	c.Redirect(http.StatusFound, redir)
+	c.Abort()
 }
 
 func mustLogin(c *gin.Context) {
