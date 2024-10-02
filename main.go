@@ -149,7 +149,7 @@ func handleChangePassword(c *gin.Context) {
 	err := shared.ModifyUserDb(func(db map[string]model.User) {
 		u, ok := db[username]
 		if ok {
-			u.Password = newPassword
+			u.Password = token.HashPasswd(newPassword)
 			db[username] = u
 		}
 	})

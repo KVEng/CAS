@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 	"github.com/KVEng/CAS/shared"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -20,4 +21,9 @@ func RemoveToken(token string) error {
 
 func IsTokenValid(token string) bool {
 	return shared.Redis.Exists(context.Background(), token).Val() == 1
+}
+
+func HashPasswd(passwd string) string {
+	bs, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+	return string(bs)
 }
