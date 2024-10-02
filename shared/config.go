@@ -39,7 +39,9 @@ func ModifyUserDb(f func(db map[string]model.User)) error {
 	for _, v := range UserDb {
 		users = append(users, v)
 	}
-	bs, err := json.MarshalIndent(db, "", "  ")
+	cfg := Config
+	cfg.User = users
+	bs, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		fmt.Println(err)
 		return err
