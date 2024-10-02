@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/KVEng/CAS/shared"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"time"
 )
 
@@ -26,4 +27,35 @@ func IsTokenValid(token string) bool {
 func HashPasswd(passwd string) string {
 	bs, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 	return string(bs)
+}
+
+func InvalidByUsername(username string) {
+	var cursor uint64
+	ctx := context.Background()
+	r := shared.Redis
+
+	for {
+		var keys []string
+		var err error
+		keys, cursor, err = r.Scan(ctx, cursor, "*", 100).Result()
+		if err != nil {
+			return
+		}
+
+		for _, key := range keys {
+			val := r.Get(ctx, key).Val()
+			if val != username {
+				continue
+			}
+
+			if err = r.Del(ctx, key).Err(); err != nil {
+				log.Printf("Error deleting key %s: %v", key, err)
+			}
+		}
+
+		if cursor == 0 {
+			break
+		}
+	}
+
 }

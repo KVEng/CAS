@@ -110,7 +110,12 @@ func logout(c *gin.Context) {
 	session := sessions.Default(c)
 	tk := session.Get("token")
 	if tk != nil {
-		token.RemoveToken(tk.(string))
+		tkStr := tk.(string)
+		token.RemoveToken(tkStr)
+		username := token.GetTokenUsername(tkStr)
+		if username != "" {
+			token.InvalidByUsername(username)
+		}
 	}
 	session.Delete("token")
 	session.Clear()
