@@ -110,12 +110,7 @@ func logout(c *gin.Context) {
 	session := sessions.Default(c)
 	tk := session.Get("token")
 	if tk != nil {
-		tkStr := tk.(string)
-		token.RemoveToken(tkStr)
-		username := token.GetTokenUsername(tkStr)
-		if username != "" {
-			token.InvalidByUsername(username)
-		}
+		token.RemoveToken(tk.(string))
 	}
 	session.Delete("token")
 	session.Clear()
@@ -154,6 +149,8 @@ func handleChangePassword(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
+	token.InvalidByUsername(username)
 
 	err := shared.ModifyUserDb(func(db map[string]model.User) {
 		u, ok := db[username]
