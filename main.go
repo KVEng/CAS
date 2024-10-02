@@ -5,6 +5,7 @@ import (
 	"github.com/KVEng/CAS/model"
 	"github.com/KVEng/CAS/shared"
 	"github.com/KVEng/CAS/token"
+	"github.com/KevinZonda/GoX/pkg/panicx"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -188,5 +189,6 @@ func main() {
 
 	engine.NoRoute(mustLogin, proxy)
 
-	engine.Run(shared.Config.ListenAddr)
+	err := engine.Run(shared.Config.ListenAddr)
+	panicx.NotNilErr(err)
 }
