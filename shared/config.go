@@ -16,6 +16,8 @@ func InitGlobalCfg() {
 	panicx.NotNilErr(err)
 	err = json.Unmarshal(bs, &Config)
 	panicx.NotNilErr(err)
+
+	UserDb = make(map[string]model.User)
 	for _, u := range Config.User {
 		UserDb[u.Username] = u
 	}
