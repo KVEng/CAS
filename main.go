@@ -19,9 +19,10 @@ func handleLogin(c *gin.Context) {
 	session := sessions.Default(c)
 	username := c.PostForm("username")
 	password := c.PostForm("password")
-	if !auth.Verify(username, password, "admin") {
+	if !auth.Verify(username, password, "") {
 		c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "Invalid credentials"})
 		c.Abort()
+		return
 	}
 
 	tk := token.TokenGenerator()
