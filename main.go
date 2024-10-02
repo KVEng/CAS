@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/KVEng/CAS/auth"
 	"net/http"
 
@@ -46,8 +45,6 @@ func mustLogin(c *gin.Context) {
 
 func isLogin(c *gin.Context) bool {
 	session := sessions.Default(c)
-	fmt.Println(session.Get("username"))
-	fmt.Println(session)
 	return session.Get("username") != nil
 }
 
