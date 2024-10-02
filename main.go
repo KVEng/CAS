@@ -7,6 +7,7 @@ import (
 	"github.com/KVEng/CAS/token"
 	"github.com/KevinZonda/GoX/pkg/panicx"
 	"net/http"
+	"strings"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
@@ -20,6 +21,7 @@ func handleLogin(c *gin.Context) {
 	session := sessions.Default(c)
 	username := c.PostForm("username")
 	password := c.PostForm("password")
+	username = strings.ToLower(username)
 	if !auth.Verify(username, password, "") {
 		c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "Invalid credentials"})
 		c.Abort()
@@ -161,6 +163,7 @@ func handleChangePassword(c *gin.Context) {
 		return
 	}
 	username := c.PostForm("username")
+	username = strings.ToLower(username)
 	oldPassword := c.PostForm("old_password")
 	newPassword := c.PostForm("new_password")
 	confirmNewPassword := c.PostForm("confirm_new_password")
