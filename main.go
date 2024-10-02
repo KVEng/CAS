@@ -99,14 +99,42 @@ func loginPage(c *gin.Context) {
 }
 
 func logout(c *gin.Context) {
-	if c.Query("KEVINZONDA_CAS_IGNORE") == "true" {
+	if NotLoginOrIgnore(c) {
 		return
 	}
+	_logout(c)
+}
+
+func NotLoginOrIgnore(c *gin.Context) bool {
 	if !isLogin(c) {
 		c.Redirect(http.StatusFound, "/cas/login")
 		c.Abort()
+		return true
+	}
+	if Ignore(c) {
+		return true
+	}
+	return false
+}
+
+func Ignore(c *gin.Context) bool {
+	return c.Query("KEVINZONDA_CAS_IGNORE") == "true"
+}
+
+func logoutAll(c *gin.Context) {
+	if NotLoginOrIgnore(c) {
 		return
 	}
+	session := sessions.Default(c)
+	if tk := session.Get("token"); tk != nil {
+		username := token.GetTokenUsername(tk.(string))
+		token.InvalidByUsername(username)
+	}
+
+	_logout(c)
+}
+
+func _logout(c *gin.Context) {
 	session := sessions.Default(c)
 	tk := session.Get("token")
 	if tk != nil {
@@ -118,11 +146,10 @@ func logout(c *gin.Context) {
 	c.HTML(http.StatusOK, "logout.html", gin.H{})
 	c.Abort()
 	return
-
 }
 
 func changePasswordPage(c *gin.Context) {
-	if c.Query("KEVINZONDA_CAS_IGNORE") == "true" {
+	if Ignore(c) {
 		return
 	}
 	c.HTML(http.StatusOK, "change-password.html", gin.H{})
@@ -130,7 +157,7 @@ func changePasswordPage(c *gin.Context) {
 }
 
 func handleChangePassword(c *gin.Context) {
-	if c.Query("KEVINZONDA_CAS_IGNORE") == "true" {
+	if Ignore(c) {
 		return
 	}
 	username := c.PostForm("username")
@@ -186,6 +213,7 @@ func main() {
 	engine.Use(sessions.Sessions(shared.COOKIE_NAME, store))
 
 	engine.GET("/cas/logout", logout, proxy)
+	engine.GET("/cas/logoutall", logoutAll, proxy)
 	engine.GET("/cas/login", loginPage, proxy)
 	engine.POST("/cas/login", handleLogin, proxy)
 
