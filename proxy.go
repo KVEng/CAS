@@ -24,6 +24,7 @@ func proxy(c *gin.Context) {
 	}
 
 	c.Request.Header.Del(shared.PROXY_REQ_HEADER)
+	c.Request.Header.Del(shared.GROUP_HEADER)
 
 	px := httputil.NewSingleHostReverseProxy(remote)
 	cks := c.Request.Cookies()
