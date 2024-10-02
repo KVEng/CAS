@@ -10,6 +10,12 @@ import (
 )
 
 func proxy(c *gin.Context) {
+	if !verifyGroupByToken(c) {
+		c.String(http.StatusForbidden, "Forbidden")
+		c.Abort()
+		return
+	}
+
 	remoteUrl := c.GetHeader(shared.PROXY_REQ_HEADER)
 	remote, err := url.Parse(remoteUrl)
 	if err != nil || remote.Scheme == "" || remote.Host == "" {

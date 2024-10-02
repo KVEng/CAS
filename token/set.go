@@ -10,6 +10,10 @@ func ActiveToken(token string, username string) error {
 	return shared.Redis.Set(context.Background(), token, username, time.Hour*24*7).Err()
 }
 
+func GetTokenUsername(token string) string {
+	return shared.Redis.Get(context.Background(), token).Val()
+}
+
 func RemoveToken(token string) error {
 	return shared.Redis.Del(context.Background(), token).Err()
 }

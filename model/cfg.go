@@ -12,3 +12,15 @@ type User struct {
 	Group    []string `json:"group"`
 	Password string   `json:"password"`
 }
+
+func (u User) IsInGroup(group string) bool {
+	if group == "" {
+		group = "admin"
+	}
+	for _, g := range u.Group {
+		if g == group {
+			return true
+		}
+	}
+	return false
+}

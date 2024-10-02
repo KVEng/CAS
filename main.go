@@ -36,10 +36,11 @@ func handleLogin(c *gin.Context) {
 }
 
 func mustLogin(c *gin.Context) {
-	if !isLogin(c) {
-		c.Redirect(http.StatusFound, "/cas/login?"+shared.REDIRECT_FLAG+"="+c.Request.URL.String())
-		c.Abort()
+	if isLogin(c) {
+		return
 	}
+	c.Redirect(http.StatusFound, "/cas/login?"+shared.REDIRECT_FLAG+"="+c.Request.URL.String())
+	c.Abort()
 }
 
 func isLogin(c *gin.Context) bool {
@@ -49,6 +50,32 @@ func isLogin(c *gin.Context) bool {
 		return false
 	}
 	return token.IsTokenValid(tk.(string))
+}
+
+func verifyGroupByToken(c *gin.Context) bool {
+	session := sessions.Default(c)
+	tkStr := session.Get("token")
+	if tkStr == nil {
+		return false
+	}
+	tk := tkStr.(string)
+	username := token.GetTokenUsername(tk)
+	if username == "" {
+		return false
+	}
+	return verifyGroup(c, username)
+}
+
+func verifyGroup(c *gin.Context, username string) bool {
+	group := c.GetHeader(shared.GROUP_HEADER)
+	if group == "" {
+		group = "admin"
+	}
+	u, ok := shared.UserDb[username]
+	if !ok {
+		return false
+	}
+	return u.IsInGroup(group)
 }
 
 func loginPage(c *gin.Context) {
