@@ -180,8 +180,8 @@ func main() {
 	engine.GET("/cas/login", loginPage, proxy)
 	engine.POST("/cas/login", handleLogin, proxy)
 
-	engine.GET("/cas/change-password", changePasswordPage, proxy)
-	engine.POST("/cas/change-password", handleChangePassword, proxy)
+	engine.GET("/cas/password", changePasswordPage, proxy)
+	engine.POST("/cas/password", handleChangePassword, proxy)
 
 	engine.NoRoute(mustLogin, proxy)
 
