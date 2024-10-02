@@ -92,6 +92,12 @@ func main() {
 
 	store, _ := redis.NewStore(10, "tcp", shared.Config.RedisAddr, "", []byte(shared.REDIS_KEY))
 
+	if shared.Config.Debug {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	engine := gin.Default()
 	engine.LoadHTMLGlob("html/*")
 	engine.Use(sessions.Sessions(shared.COOKIE_NAME, store))
