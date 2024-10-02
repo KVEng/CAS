@@ -121,6 +121,7 @@ func changePasswordPage(c *gin.Context) {
 		return
 	}
 	c.HTML(http.StatusOK, "change-password.html", gin.H{})
+	c.Abort()
 }
 
 func handleChangePassword(c *gin.Context) {
@@ -158,6 +159,7 @@ func handleChangePassword(c *gin.Context) {
 		return
 	}
 	c.HTML(http.StatusOK, "change-password.html", gin.H{"error": "Password changed successfully"})
+	c.Abort()
 }
 
 func main() {
@@ -180,8 +182,8 @@ func main() {
 	engine.GET("/cas/login", loginPage, proxy)
 	engine.POST("/cas/login", handleLogin, proxy)
 
-	engine.GET("/cas/password", changePasswordPage, proxy)
-	engine.POST("/cas/password", handleChangePassword, proxy)
+	engine.GET("/cas/password", changePasswordPage, mustLogin, proxy)
+	engine.POST("/cas/password", handleChangePassword, mustLogin, proxy)
 
 	engine.NoRoute(mustLogin, proxy)
 
