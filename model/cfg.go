@@ -18,7 +18,7 @@ func (u User) IsInGroup(group string) bool {
 		group = "admin"
 	}
 	for _, g := range u.Group {
-		if g == group {
+		if g == group || g == "admin" {
 			return true
 		}
 	}
