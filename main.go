@@ -79,7 +79,7 @@ func main() {
 	engine.GET("/cas/logout", func(c *gin.Context) {
 		if isLogin(c) {
 			session := sessions.Default(c)
-			session.Clear()
+			session.Delete("username")
 			session.Save()
 			c.String(http.StatusOK, "CAS Logged out")
 			c.Abort()
