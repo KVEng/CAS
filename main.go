@@ -93,10 +93,12 @@ func loginPage(c *gin.Context) {
 }
 
 func logout(c *gin.Context) {
-	if !isLogin(c) {
+	if c.Query("KEVINZONDA_CAS_IGNORE") == "true" {
 		return
 	}
-	if c.Query("KEVINZONDA_CAS_IGNORE") == "true" {
+	if !isLogin(c) {
+		c.Redirect(http.StatusFound, "/cas/login")
+		c.Abort()
 		return
 	}
 	session := sessions.Default(c)
