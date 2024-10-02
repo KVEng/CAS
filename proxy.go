@@ -17,6 +17,11 @@ func proxy(c *gin.Context) {
 	}
 
 	remoteUrl := c.GetHeader(shared.PROXY_REQ_HEADER)
+	if remoteUrl == "" {
+		c.HTML(http.StatusOK, "index.html", gin.H{})
+		c.Abort()
+		return
+	}
 	remote, err := url.Parse(remoteUrl)
 	if err != nil || remote.Scheme == "" || remote.Host == "" {
 		c.String(http.StatusBadRequest, "KevinZonda CAS Error: %s", "PARSER_FAILURE")
