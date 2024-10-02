@@ -87,8 +87,10 @@ func logout(c *gin.Context) {
 }
 
 func main() {
+	shared.InitGlobalCfg()
 	shared.InitGlobalRdb()
-	store, _ := redis.NewStore(10, "tcp", shared.REDIS_ADDR, "", []byte(shared.REDIS_KEY))
+
+	store, _ := redis.NewStore(10, "tcp", shared.Config.RedisAddr, "", []byte(shared.REDIS_KEY))
 
 	engine := gin.Default()
 	engine.LoadHTMLGlob("html/*")
@@ -99,5 +101,5 @@ func main() {
 	engine.POST("/cas/login", handleLogin, proxy)
 	engine.NoRoute(mustLogin, proxy)
 
-	engine.Run("localhost:11392")
+	engine.Run(shared.Config.ListenAddr)
 }

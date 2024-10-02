@@ -8,7 +8,7 @@ var Redis *redis.Client
 
 func InitGlobalRdb() {
 	Redis = redis.NewClient(&redis.Options{
-		Addr:     REDIS_ADDR,
+		Addr:     Config.RedisAddr,
 		Password: "",
 		DB:       1,
 	})

@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/KevinZonda/GoX v0.0.18 // indirect
 	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
