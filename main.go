@@ -2,18 +2,14 @@ package main
 
 import (
 	"github.com/KVEng/CAS/auth"
+	"github.com/KVEng/CAS/shared"
+	"github.com/KVEng/CAS/token"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 )
-
-const PROXY_REQ_HEADER = "KevinZonda-CAS-Proxy"
-const COOKIE_NAME = "KEVINZONDA_CAS_SESSION"
-const REDIS_KEY = "CAS_SESSION"
-const REDIS_ADDR = "localhost:6379"
-const REDIRECT_FLAG = "redirect"
 
 func handleLogin(c *gin.Context) {
 	if isLogin(c) {
@@ -27,64 +23,80 @@ func handleLogin(c *gin.Context) {
 		c.Abort()
 	}
 
-	session.Set("username", username)
+	tk := token.TokenGenerator()
+	token.ActiveToken(tk, username)
+
+	session.Set("token", tk)
 	session.Save()
 
-	if c.Query(REDIRECT_FLAG) != "" {
-		c.Redirect(http.StatusFound, c.Query(REDIRECT_FLAG))
+	if c.Query(shared.REDIRECT_FLAG) != "" {
+		c.Redirect(http.StatusFound, c.Query(shared.REDIRECT_FLAG))
 		c.Abort()
 	}
 }
 
 func mustLogin(c *gin.Context) {
 	if !isLogin(c) {
-		c.Redirect(http.StatusFound, "/login?"+REDIRECT_FLAG+"="+c.Request.URL.String())
+		c.Redirect(http.StatusFound, "/cas/login?"+shared.REDIRECT_FLAG+"="+c.Request.URL.String())
 		c.Abort()
 	}
 }
 
 func isLogin(c *gin.Context) bool {
 	session := sessions.Default(c)
-	return session.Get("username") != nil
+	tk := session.Get("token")
+	if tk == nil {
+		return false
+	}
+	return token.IsTokenValid(tk.(string))
 }
 
 func loginPage(c *gin.Context) {
 	if isLogin(c) {
 		return
 	}
-	redir := c.Query(REDIRECT_FLAG)
+	redir := c.Query(shared.REDIRECT_FLAG)
 	if redir != "" {
-		redir = "?" + REDIRECT_FLAG + "=" + redir
+		redir = "?" + shared.REDIRECT_FLAG + "=" + redir
 	}
 	c.HTML(http.StatusOK, "login.html", gin.H{
-		"action": "/login" + redir,
+		"action": "/cas/login" + redir,
 	})
 	c.Abort()
 }
 
+func logout(c *gin.Context) {
+	if !isLogin(c) {
+		return
+	}
+	if c.Query("KEVINZONDA_CAS_IGNORE") == "true" {
+		return
+	}
+	session := sessions.Default(c)
+	tk := session.Get("token")
+	if tk != nil {
+		token.RemoveToken(tk.(string))
+	}
+	session.Delete("token")
+	session.Clear()
+	session.Save()
+	c.HTML(http.StatusOK, "logout.html", gin.H{})
+	c.Abort()
+	return
+
+}
+
 func main() {
-	store, _ := redis.NewStore(10, "tcp", REDIS_ADDR, "", []byte(REDIS_KEY))
+	shared.InitGlobalRdb()
+	store, _ := redis.NewStore(10, "tcp", shared.REDIS_ADDR, "", []byte(shared.REDIS_KEY))
 
 	engine := gin.Default()
-
 	engine.LoadHTMLGlob("html/*")
+	engine.Use(sessions.Sessions(shared.COOKIE_NAME, store))
 
-	engine.Use(sessions.Sessions(COOKIE_NAME, store))
-
-	engine.NoRoute(mustLogin)
-
-	engine.GET("/cas/logout", func(c *gin.Context) {
-		if isLogin(c) {
-			session := sessions.Default(c)
-			session.Delete("username")
-			session.Save()
-			c.String(http.StatusOK, "CAS Logged out")
-			c.Abort()
-			return
-		}
-	}, proxy)
-	engine.GET("/login", loginPage, proxy)
-	engine.POST("/login", handleLogin, proxy)
+	engine.GET("/cas/logout", logout, proxy)
+	engine.GET("/cas/login", loginPage, proxy)
+	engine.POST("/cas/login", handleLogin, proxy)
 	engine.NoRoute(mustLogin, proxy)
 
 	engine.Run("localhost:11392")
