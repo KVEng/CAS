@@ -24,6 +24,7 @@ func handleLogin(c *gin.Context) {
 	password := c.PostForm("password")
 	if auth.Verify(username, password, "admin") {
 		session.Set("username", username)
+		session.Save()
 	} else {
 		c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "Invalid credentials"})
 	}
@@ -40,6 +41,7 @@ func mustLogin(c *gin.Context) {
 func isLogin(c *gin.Context) bool {
 	session := sessions.Default(c)
 	fmt.Println(session.Get("username"))
+	fmt.Println(session)
 	return session.Get("username") != nil
 }
 
@@ -72,6 +74,20 @@ func main() {
 	}, proxy)
 	engine.GET("/login", loginPage, proxy)
 	engine.POST("/login", handleLogin, proxy)
+	engine.GET("/incr", func(c *gin.Context) {
+		session := sessions.Default(c)
+		var count int
+		v := session.Get("count")
+		if v == nil {
+			count = 0
+		} else {
+			count = v.(int)
+			count++
+		}
+		session.Set("count", count)
+		session.Save()
+		c.JSON(200, gin.H{"count": count})
+	})
 	engine.NoRoute(mustLogin, proxy)
 
 	engine.Run("localhost:11392")
