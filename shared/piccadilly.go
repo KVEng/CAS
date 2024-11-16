@@ -46,15 +46,10 @@ func InitPKV(addr string) {
 			state := conn.GetState()
 			fmt.Println("Piccadilly connection state:", state)
 			if state == connectivity.TransientFailure {
-				_pkv, _err := client.NewClient(addr)
-				if _err != nil {
-					log.Println(_err)
-					continue
-				}
-				conn = pkv.GetConn()
-				pkv = _pkv
-				pkvGroup = pkv.Copy()
-				pkvUser = pkv.Copy()
+				pkv.Close()
+
+				err = initPKV(addr)
+				fmt.Println("reconnect piccadilly", err)
 			}
 			time.Sleep(5 * time.Second)
 		}
