@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"fmt"
 	"github.com/KVRes/PiccadillySDK/client"
 	"github.com/KVRes/PiccadillySDK/types"
 	"github.com/KevinZonda/GoX/pkg/panicx"
@@ -23,6 +24,7 @@ func InitPKV(addr string) {
 func GetUserPassword(user string) (string, bool) {
 	user = strings.ToLower(user)
 	v, err := pkvUser.Get(user)
+	fmt.Println("PKV", v, err)
 	if err != nil {
 		return "", false
 	}
