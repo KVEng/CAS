@@ -1,7 +1,6 @@
 package shared
 
 import (
-	"fmt"
 	"github.com/KVRes/PiccadillySDK/client"
 	"github.com/KVRes/PiccadillySDK/types"
 	"github.com/KevinZonda/GoX/pkg/panicx"
@@ -18,13 +17,12 @@ func InitPKV(addr string) {
 	pkvGroup = pkv.Copy()
 
 	panicx.NotNilErr(pkvUser.Connect("/CAS/User", types.CreateIfNotExist, types.NoLinear))
-	panicx.NotNilErr(pkvUser.Connect("/CAS/Group", types.CreateIfNotExist, types.NoLinear))
+	panicx.NotNilErr(pkvGroup.Connect("/CAS/Group", types.CreateIfNotExist, types.NoLinear))
 }
 
 func GetUserPassword(user string) (string, bool) {
 	user = strings.ToLower(user)
 	v, err := pkvUser.Get(user)
-	fmt.Println("PKV", v, err)
 	if err != nil {
 		return "", false
 	}
