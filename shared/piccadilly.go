@@ -1,13 +1,11 @@
 package shared
 
 import (
-	"fmt"
 	"github.com/KVRes/PiccadillySDK/client"
 	"github.com/KVRes/PiccadillySDK/types"
-	"google.golang.org/grpc/connectivity"
+	"github.com/KevinZonda/GoX/pkg/panicx"
 	"log"
 	"strings"
-	"time"
 )
 
 var pkv *client.Client
@@ -36,23 +34,7 @@ func initPKV(addr string) error {
 
 }
 func InitPKV(addr string) {
-	err := initPKV(addr)
-	if err != nil {
-		panic(err)
-	}
-
-	go func() {
-		conn := pkv.GetConn()
-		for {
-			state := conn.GetState()
-			fmt.Println("Piccadilly connection state:", state)
-			if state == connectivity.TransientFailure {
-				err = initPKV(addr)
-				fmt.Println("reconnect piccadilly", err)
-			}
-			time.Sleep(5 * time.Second)
-		}
-	}()
+	panicx.NotNilErr(initPKV(addr))
 }
 
 func GetUserPassword(user string) (string, bool) {
