@@ -3,7 +3,7 @@ module github.com/KVEng/CAS
 go 1.23.1
 
 require (
-	github.com/KVRes/PiccadillySDK v0.0.2
+	github.com/KVRes/PiccadillySDK v0.0.3
 	github.com/KevinZonda/GoX v0.0.18
 	github.com/gin-contrib/sessions v1.0.1
 	github.com/gin-gonic/gin v1.10.0
