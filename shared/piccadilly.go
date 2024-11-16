@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/KVRes/PiccadillySDK/client"
 	"github.com/KVRes/PiccadillySDK/types"
-	"github.com/KevinZonda/GoX/pkg/panicx"
 	"google.golang.org/grpc/connectivity"
 	"log"
 	"strings"
@@ -60,17 +59,13 @@ func InitPKV(addr string) {
 			time.Sleep(5 * time.Second)
 		}
 	}()
-	pkvUser = pkv.Copy()
-	pkvGroup = pkv.Copy()
-
-	panicx.NotNilErr(pkvUser.Connect("/CAS/User", types.CreateIfNotExist, types.NoLinear))
-	panicx.NotNilErr(pkvGroup.Connect("/CAS/Group", types.CreateIfNotExist, types.NoLinear))
 }
 
 func GetUserPassword(user string) (string, bool) {
 	user = strings.ToLower(user)
 	v, err := pkvUser.Get(user)
 	if err != nil {
+		log.Println(err)
 		return "", false
 	}
 	return v, true
