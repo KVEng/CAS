@@ -6,27 +6,58 @@ import (
 	"github.com/KVRes/PiccadillySDK/types"
 	"github.com/KevinZonda/GoX/pkg/panicx"
 	"google.golang.org/grpc/connectivity"
+	"log"
 	"strings"
 	"time"
 )
 
+var pkv *client.Client
 var pkvUser *client.Client
 var pkvGroup *client.Client
 
+func initPKV(addr string) error {
+	var err error
+	pkv, err = client.NewClient(addr)
+	if err != nil {
+		return err
+	}
+	pkvUser = pkv.Copy()
+	pkvGroup = pkv.Copy()
+
+	err = pkvUser.Connect("/CAS/User", types.CreateIfNotExist, types.NoLinear)
+	if err != nil {
+		return err
+	}
+	err = pkvGroup.Connect("/CAS/Group", types.CreateIfNotExist, types.NoLinear)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
 func InitPKV(addr string) {
-	pkv, err := client.NewClient(addr)
-	panicx.NotNilErr(err)
+	err := initPKV(addr)
+	if err != nil {
+		panic(err)
+	}
 
 	go func() {
 		conn := pkv.GetConn()
 		for {
 			state := conn.GetState()
-			if state != connectivity.Ready {
-				fmt.Println("Piccadilly is not ready: ", state)
-				conn.Connect()
-				fmt.Println("Piccadilly retried: ", conn.GetState() == connectivity.Ready, conn.GetState())
+			fmt.Println("Piccadilly connection state:", state)
+			if state == connectivity.TransientFailure {
+				_pkv, _err := client.NewClient(addr)
+				if _err != nil {
+					log.Println(_err)
+					continue
+				}
+				conn = pkv.GetConn()
+				pkv = _pkv
+				pkvGroup = pkv.Copy()
+				pkvUser = pkv.Copy()
 			}
-			time.Sleep(3 * time.Second)
+			time.Sleep(5 * time.Second)
 		}
 	}()
 	pkvUser = pkv.Copy()
