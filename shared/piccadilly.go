@@ -24,6 +24,7 @@ func InitPKV(addr string) {
 			if state != connectivity.Ready {
 				fmt.Println("Piccadilly is not ready: ", state)
 				conn.Connect()
+				fmt.Println("Piccadilly retried: ", conn.GetState() == connectivity.Ready, conn.GetState())
 			}
 			time.Sleep(10 * time.Second)
 		}
