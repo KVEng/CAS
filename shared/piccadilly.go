@@ -15,6 +15,7 @@ var pkvUser *client.Client
 var pkvGroup *client.Client
 
 func initPKV(addr string) error {
+	log.Println("initPKV", addr)
 	var err error
 	pkv, err = client.NewClient(addr)
 	if err != nil {
@@ -45,7 +46,7 @@ func InitPKV(addr string) {
 		for {
 			state := conn.GetState()
 			fmt.Println("Piccadilly connection state:", state)
-			if state == connectivity.TransientFailure {
+			if state == connectivity.TransientFailure || state == connectivity.Shutdown {
 				pkv.Close()
 
 				err = initPKV(addr)
