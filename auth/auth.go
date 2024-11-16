@@ -6,17 +6,18 @@ import (
 )
 
 func Verify(user, password, requiredGroup string) bool {
-	u, ok := shared.UserDb[user]
+	passwd, ok := shared.GetUserPassword(user)
 	if !ok {
 		return false
 	}
 	if requiredGroup == "" {
-		return verify(password, u.Password)
+		return verify(password, passwd)
 	}
 
-	for _, g := range u.Group {
+	group, _ := shared.GetUserGroups(user)
+	for _, g := range group {
 		if g == requiredGroup {
-			return verify(password, u.Password)
+			return verify(password, passwd)
 		}
 	}
 

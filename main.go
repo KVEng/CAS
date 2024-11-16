@@ -5,6 +5,7 @@ import (
 	"github.com/KVEng/CAS/model"
 	"github.com/KVEng/CAS/shared"
 	"github.com/KVEng/CAS/token"
+	"github.com/KVRes/PiccadillySDK/types"
 	"github.com/KevinZonda/GoX/pkg/panicx"
 	"net/http"
 	"strings"
@@ -79,11 +80,11 @@ func verifyGroup(c *gin.Context, username string) bool {
 	if group == "" {
 		group = "admin"
 	}
-	u, ok := shared.UserDb[username]
+	uGroups, ok := shared.GetUserGroups(username)
 	if !ok {
 		return false
 	}
-	return u.IsInGroup(group)
+	return model.IsInGroup(uGroups, group)
 }
 
 func loginPage(c *gin.Context) {
@@ -181,14 +182,7 @@ func handleChangePassword(c *gin.Context) {
 	}
 
 	token.InvalidByUsername(username)
-
-	err := shared.ModifyUserDb(func(db map[string]model.User) {
-		u, ok := db[username]
-		if ok {
-			u.Password = token.HashPasswd(newPassword)
-			db[username] = u
-		}
-	})
+	err := shared.ChangeUserPassword(username, newPassword)
 
 	if err != nil {
 		c.HTML(http.StatusBadRequest, "change-password.html", gin.H{"error": "Storage unit failure"})
@@ -202,6 +196,7 @@ func handleChangePassword(c *gin.Context) {
 func main() {
 	shared.InitGlobalCfg()
 	shared.InitGlobalRdb()
+	shared.InitPKV(types.DEFAULT_ADDR)
 
 	store, _ := redis.NewStore(10, "tcp", shared.Config.RedisAddr, "", []byte(shared.REDIS_KEY))
 
