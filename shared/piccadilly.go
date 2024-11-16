@@ -46,9 +46,7 @@ func InitPKV(addr string) {
 		for {
 			state := conn.GetState()
 			fmt.Println("Piccadilly connection state:", state)
-			if state == connectivity.TransientFailure || state == connectivity.Shutdown {
-				pkv.Close()
-
+			if state == connectivity.TransientFailure {
 				err = initPKV(addr)
 				fmt.Println("reconnect piccadilly", err)
 			}
