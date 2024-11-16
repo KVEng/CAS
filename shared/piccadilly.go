@@ -26,7 +26,7 @@ func InitPKV(addr string) {
 				conn.Connect()
 				fmt.Println("Piccadilly retried: ", conn.GetState() == connectivity.Ready, conn.GetState())
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(3 * time.Second)
 		}
 	}()
 	pkvUser = pkv.Copy()
