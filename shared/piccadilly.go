@@ -11,6 +11,7 @@ import (
 var pkv *client.Client
 var pkvUser *client.Client
 var pkvGroup *client.Client
+var PkvSession *client.Client
 
 func initPKV(addr string) error {
 	log.Println("initPKV", addr)
@@ -21,6 +22,7 @@ func initPKV(addr string) error {
 	}
 	pkvUser = pkv.Copy()
 	pkvGroup = pkv.Copy()
+	PkvSession = pkv.Copy()
 
 	err = pkvUser.Connect("/CAS/User", types.CreateIfNotExist, types.NoLinear)
 	if err != nil {
@@ -30,6 +32,12 @@ func initPKV(addr string) error {
 	if err != nil {
 		return err
 	}
+
+	err = PkvSession.Connect("/CAS/Session", types.CreateIfNotExist, types.NoLinear)
+	if err != nil {
+		return err
+	}
+
 	return nil
 
 }

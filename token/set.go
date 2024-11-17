@@ -1,27 +1,27 @@
 package token
 
 import (
-	"context"
 	"github.com/KVEng/CAS/shared"
 	"golang.org/x/crypto/bcrypt"
 	"log"
-	"time"
 )
 
 func ActiveToken(token string, username string) error {
-	return shared.Redis.Set(context.Background(), token, username, time.Hour*24*7).Err()
+	return shared.PkvSession.SetWithTTL(token, username, 60*60*24*7) // 60sec * 60min * 24hour * 7day
 }
 
 func GetTokenUsername(token string) string {
-	return shared.Redis.Get(context.Background(), token).Val()
+	v, _ := shared.PkvSession.Get(token)
+	return v
 }
 
 func RemoveToken(token string) error {
-	return shared.Redis.Del(context.Background(), token).Err()
+	return shared.PkvSession.Del(token)
 }
 
 func IsTokenValid(token string) bool {
-	return shared.Redis.Exists(context.Background(), token).Val() == 1
+	_, err := shared.PkvSession.Get(token)
+	return err == nil
 }
 
 func HashPasswd(passwd string) string {
@@ -30,31 +30,22 @@ func HashPasswd(passwd string) string {
 }
 
 func InvalidByUsername(username string) {
-	var cursor uint64
-	ctx := context.Background()
-	r := shared.Redis
-
+	pkv := shared.PkvSession
 	for {
-		var keys []string
-		var err error
-		keys, cursor, err = r.Scan(ctx, cursor, "*", 100).Result()
+		keys, err := pkv.Keys()
 		if err != nil {
-			return
+			log.Printf("Error getting keys: %v", err)
+			break
 		}
 
 		for _, key := range keys {
-			val := r.Get(ctx, key).Val()
-			if val != username {
+			if GetTokenUsername(key) != username {
 				continue
 			}
 
-			if err = r.Del(ctx, key).Err(); err != nil {
+			if err = pkv.Del(key); err != nil {
 				log.Printf("Error deleting key %s: %v", key, err)
 			}
-		}
-
-		if cursor == 0 {
-			break
 		}
 	}
 

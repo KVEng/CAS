@@ -195,7 +195,6 @@ func handleChangePassword(c *gin.Context) {
 
 func main() {
 	shared.InitGlobalCfg()
-	shared.InitGlobalRdb()
 	shared.InitPKV(types.DEFAULT_ADDR)
 
 	store, _ := redis.NewStore(10, "tcp", shared.Config.RedisAddr, "", []byte(shared.REDIS_KEY))
